@@ -6,6 +6,21 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import os
+import nltk
+
+# Define a fixed location for NLTK data
+nltk_data_path = "./nltk_data"
+
+# Create directory if it doesn't exist
+os.makedirs(nltk_data_path, exist_ok=True)
+
+# Set the environment variable for NLTK to know where to look for the tokenizers
+os.environ['NLTK_DATA'] = nltk_data_path
+
+# Download the punkt tokenizer
+nltk.download('punkt', download_dir=nltk_data_path)
+
+# Rest of your Streamlit app code
 
 class RAGParams(BaseModel):
     include_summarization: bool = Field(default=False)
