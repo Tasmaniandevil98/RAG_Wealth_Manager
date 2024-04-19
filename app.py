@@ -29,7 +29,8 @@ def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Docume
 # Streamlit UI
 def main():
     st.title('Wealth Management Chatbot')
-    os.environ["OPENAI_API_KEY"] = "your_openai_api_key"
+    penai_api_key = st.secrets["openai_api_key"]
+    os.environ["OPENAI_API_KEY"] = openai_api_key
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
     docs = load_data(directory='documents/')
