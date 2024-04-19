@@ -33,7 +33,6 @@ def main():
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
     docs = load_data(directory='documents/')
-")
     agent = construct_agent(system_prompt, rag_params, docs)
 
     user_input = st.text_input("You:", help='Type your query and press enter.')
