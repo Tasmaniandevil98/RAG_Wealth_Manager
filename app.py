@@ -71,7 +71,7 @@ def main():
             st.text_area("Conversation:", value="\n".join(st.session_state.conversation_history), height=300, disabled=True)
 
             # Clear the input field
-            st.experimental_rerun()
+            st.rerun()
 
 if __name__ == "__main__":
     main()
