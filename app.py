@@ -56,7 +56,12 @@ def main():
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
 
-    user_input = st.text_input("You:", key="user_input")
+    if 'input_count' not in st.session_state:
+        st.session_state.input_count = 0
+
+    # Generate a unique key for the input widget using the count of inputs
+    user_input_key = f"user_input_{st.session_state.input_count}"
+    user_input = st.text_input("You:", key=user_input_key)
 
     if st.button('Submit', key='submit_button'):
         if user_input:
@@ -69,8 +74,8 @@ def main():
             full_conversation_text = conversation_text + top_k_results_text
             st.session_state.conversation_history.append(full_conversation_text)
 
-            # Reset input field
-            st.session_state['user_input'] = ""
+            # Increment the input count to generate a new key for the next input
+            st.session_state.input_count += 1
 
     # Display all conversation history
     for index, conversation in enumerate(st.session_state.conversation_history):
