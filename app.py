@@ -53,21 +53,28 @@ def main():
     if 'agent' not in st.session_state:
         st.session_state.agent = construct_agent(system_prompt, rag_params, st.session_state.docs)
 
+    if 'conversation_history' not in st.session_state:
+        st.session_state.conversation_history = []
+
     user_input = st.text_input("You:", key="user_input")
 
     if st.button('Submit', key='submit_button'):
         if user_input:
             response = make_api_request(st.session_state.agent, user_input)
             conversation_text = f"You: {user_input}\nBot: {response.response}\n"
-            top_k_results_text = "Top results:\n" + "\n".join(
+            top_k_results_text = "\n".join(
                 f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
                 for i, result in enumerate(response.source_nodes[:rag_params.top_k])
             )
-            st.text_area("Current Conversation:", value=conversation_text + top_k_results_text, height=300, disabled=True, key=st.session_state.get('conversation_count', 0))
-            st.session_state['conversation_count'] = st.session_state.get('conversation_count', 0) + 1
-            # Use rerun to clear the input field
-            st.rerun()
+            full_conversation_text = conversation_text + top_k_results_text
+            st.session_state.conversation_history.append(full_conversation_text)
+
+            # Reset input field
+            st.session_state['user_input'] = ""
+
+    # Display all conversation history
+    for index, conversation in enumerate(st.session_state.conversation_history):
+        st.text_area(f"Conversation {index + 1}:", value=conversation, height=300, disabled=True, key=f"conv_{index}")
 
 if __name__ == "__main__":
     main()
-
