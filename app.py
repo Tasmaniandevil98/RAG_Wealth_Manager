@@ -33,7 +33,14 @@ def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Docume
 
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), after=after_log(logger, logging.INFO))
 def make_api_request(agent, user_input):
-    return agent.chat(user_input)
+    try:
+        response = agent.chat(user_input)
+        logger.info(f"Received response: {response.response}")
+        return response
+    except Exception as e:
+        logger.error(f"Failed to get response: {e}")
+        raise
+
 
 def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
