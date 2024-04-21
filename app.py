@@ -4,7 +4,7 @@ from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.chat_engine import CondensePlusContextChatEngine
 from llama_index.embeddings.openai import OpenAIEmbedding
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 import os
 from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryError
 import logging
@@ -37,7 +37,6 @@ def make_api_request(agent, user_input):
     """Attempt to make an API request with retry mechanism."""
     return agent.chat(user_input)
 
-
 # Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
@@ -45,8 +44,11 @@ def main():
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
 
+    if 'docs' not in st.session_state:
+        st.session_state.docs = load_data(directory="docs/")  # Adjust directory as necessary
+
     if 'agent' not in st.session_state:
-        st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
+        st.session_state.agent = construct_agent(system_prompt, rag_params, st.session_state.docs)
 
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
@@ -55,9 +57,7 @@ def main():
     for index, exchange in enumerate(st.session_state.conversation_history):
         st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
 
-    # Create an input placeholder
-    user_input_placeholder = st.empty()
-    user_input = user_input_placeholder.text_input("You:", key="user_input")
+    user_input = st.text_input("You:", key="user_input")
 
     if st.button('Submit', key='submit_button'):
         if user_input:
@@ -65,7 +65,7 @@ def main():
             st.session_state.conversation_history.append(user_prompt_display)
 
             # Generate response
-            response = st.session_state.agent.chat(user_input)
+            response = make_api_request(st.session_state.agent, user_input)
             bot_response_display = f"Bot: {response.response}"
             st.session_state.conversation_history.append(bot_response_display)
 
@@ -75,12 +75,8 @@ def main():
             for i, result in enumerate(top_k_results, start=1):
                 st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
 
-            # Clear the input field by recreating it
-            user_input_placeholder.text_input("You:", value='', key="user_input")
-
-            # Display updated conversation
-            st.rerun()
+            # Clear the input field by resetting the key
+            st.session_state.user_input = ""
 
 if __name__ == "__main__":
-    docs = load_data(directory="docs/")  # Adjust directory as necessary
     main()
