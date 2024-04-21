@@ -36,6 +36,7 @@ def make_api_request(agent, user_input):
     return agent.chat(user_input)
 
 def main():
+    os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     st.title('Wealth Management Chatbot')
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
