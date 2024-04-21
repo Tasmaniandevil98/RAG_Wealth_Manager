@@ -29,15 +29,12 @@ def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Docume
     llm = OpenAI(model=rag_params.llm)
     service_context = ServiceContext.from_defaults(chunk_size=rag_params.chunk_size, llm=llm, embed_model=rag_params.embed_model)
     vector_index = VectorStoreIndex.from_documents(docs, service_context=service_context)
-    agent = CondensePlusContextChatEngine.from_defaults(vector_index.as_retriever(similarity_top_k=rag_params.top_k), system_prompt=system_prompt)
-    return agent
+    return CondensePlusContextChatEngine.from_defaults(vector_index.as_retriever(similarity_top_k=rag_params.top_k), system_prompt=system_prompt)
 
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), after=after_log(logger, logging.INFO))
 def make_api_request(agent, user_input):
-    """Attempt to make an API request with retry mechanism."""
     return agent.chat(user_input)
 
-# Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
@@ -45,33 +42,24 @@ def main():
     rag_params = RAGParams()
 
     if 'docs' not in st.session_state:
-        st.session_state.docs = load_data(directory="docs/")  # Adjust directory as necessary
-
+        st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
         st.session_state.agent = construct_agent(system_prompt, rag_params, st.session_state.docs)
-
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
 
     user_input = st.text_input("You:", key="user_input")
-
     if st.button('Submit', key='submit_button'):
         if user_input:
             user_prompt_display = f"You: {user_input}\n"
             response = make_api_request(st.session_state.agent, user_input)
             bot_response_display = f"Bot: {response.response}\n"
             top_k_results_display = "Top results:\n"
-            top_k_results = response.source_nodes[:rag_params.top_k]
-            for i, result in enumerate(top_k_results, start=1):
+            for i, result in enumerate(response.source_nodes[:rag_params.top_k], start=1):
                 top_k_results_display += f"{i}. {result.node.text[:1000]} (Score: {result.score})\n"
-
-            # Append the full conversation block (user prompt, bot response, and top-k results)
             full_conversation_block = user_prompt_display + bot_response_display + top_k_results_display
             st.session_state.conversation_history.append(full_conversation_block)
             st.text_area("Conversation:", value="\n".join(st.session_state.conversation_history), height=300, disabled=True)
-
-            # Clear the input field
-            st.rerun()
 
 if __name__ == "__main__":
     main()
