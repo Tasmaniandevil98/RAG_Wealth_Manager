@@ -45,21 +45,20 @@ def main():
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
         st.session_state.agent = construct_agent(system_prompt, rag_params, st.session_state.docs)
-    if 'conversation_history' not in st.session_state:
-        st.session_state.conversation_history = []
 
     user_input = st.text_input("You:", key="user_input")
+
     if st.button('Submit', key='submit_button'):
         if user_input:
-            user_prompt_display = f"You: {user_input}\n"
             response = make_api_request(st.session_state.agent, user_input)
-            bot_response_display = f"Bot: {response.response}\n"
-            top_k_results_display = "Top results:\n"
-            for i, result in enumerate(response.source_nodes[:rag_params.top_k], start=1):
-                top_k_results_display += f"{i}. {result.node.text[:1000]} (Score: {result.score})\n"
-            full_conversation_block = user_prompt_display + bot_response_display + top_k_results_display
-            st.session_state.conversation_history.append(full_conversation_block)
-            st.text_area("Conversation:", value="\n".join(st.session_state.conversation_history), height=300, disabled=True)
+            conversation_text = f"You: {user_input}\nBot: {response.response}\n"
+            top_k_results_text = "Top results:\n" + "\n".join(
+                f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
+                for i, result in enumerate(response.source_nodes[:rag_params.top_k])
+            )
+            st.text_area("Current Conversation:", value=conversation_text + top_k_results_text, height=300, disabled=True, key=st.session_state.get('conversation_count', 0))
+            st.session_state['conversation_count'] = st.session_state.get('conversation_count', 0) + 1
+            st.session_state['user_input'] = ""  # Clear input
 
 if __name__ == "__main__":
     main()
