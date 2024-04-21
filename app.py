@@ -43,7 +43,7 @@ def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
-    docs = load_data(directory="./data/")  # Adjust directory as necessary
+    docs = load_data(directory="docs/")  
 
     if 'agent' not in st.session_state:
         st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
