@@ -57,7 +57,9 @@ def main():
     for index, exchange in enumerate(st.session_state.conversation_history):
         st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
 
-    user_input = st.text_input("You:", key="user_input")
+    # Create a unique key for the input widget by using the length of the conversation history
+    user_input_key = f"user_input_{len(st.session_state.conversation_history)}"
+    user_input = st.text_input("You:", key=user_input_key)
 
     if st.button('Submit', key='submit_button'):
         if user_input:
@@ -75,8 +77,7 @@ def main():
             for i, result in enumerate(top_k_results, start=1):
                 st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
 
-            # Clear the input field by resetting the key
-            st.session_state.user_input = ""
+            # No need to manually clear the input field, it's automatically cleared due to the unique key
 
 if __name__ == "__main__":
     main()
