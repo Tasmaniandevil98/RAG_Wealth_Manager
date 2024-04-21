@@ -27,41 +27,31 @@ def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Docume
     agent = CondensePlusContextChatEngine.from_defaults(vector_index.as_retriever(similarity_top_k=rag_params.top_k), system_prompt=system_prompt)
     return agent
 
-# Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
-    openai_api_key = st.secrets["openai_api_key"]
-    os.environ["OPENAI_API_KEY"] = openai_api_key
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
+    rag_params = RAGParams()
+    docs = load_data(directory="/docs")  # Make sure this path is correct and accessible
+    agent = construct_agent(system_prompt, rag_params, docs)
 
-    # Initialize parameters and load data only once
-    if 'agent' not in st.session_state:
-        rag_params = RAGParams()
-        docs = load_data(directory="docs/")
-        st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
-
-    # Chat interface
     user_input = st.text_input("You:", help='Type your query and press enter.')
-    if st.button('Submit') and user_input:
-        # Append user input to chat history
-        if 'chat_history' not in st.session_state:
-            st.session_state.chat_history = []
-        
-        st.session_state.chat_history.append(f"You: {user_input}")
+    if st.button('Submit'):
+        if user_input:
+            # Perform chat
+            response = agent.chat(user_input)
+            if hasattr(response, 'response'):
+                st.write(f"Bot: {response.response}")
+                # Check if 'source_nodes' exists
+                if hasattr(response, 'source_nodes') and len(response.source_nodes) >= rag_params.top_k:
+                    top_k_results = response.source_nodes[:rag_params.top_k]
+                    st.write("Top results for prompt:")
+                    for i, result in enumerate(top_k_results, start=1):
+                        st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
+                else:
+                    st.write("No sufficient source nodes available.")
+            else:
+                st.write("No response from the chat agent.")
 
-        # Perform chat
-        response = st.session_state.agent.chat(user_input)
-        st.session_state.chat_history.append(f"Bot: {response.response}")
-
-        # Display chat history
-        for message in st.session_state.chat_history:
-            st.text(message)
-
-        # Optionally, display the top K results
-        top_k_results = response.source_nodes[:rag_params.top_k]
-        st.write("Top results for prompt:")
-        for i, result in enumerate(top_k_results, start=1):
-            st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
 
 if __name__ == "__main__":
     main()
