@@ -43,7 +43,7 @@ def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
-    docs = load_data(directory="docs/")  
+    docs = load_data(directory="docs/")  # Adjust directory as necessary
 
     if 'agent' not in st.session_state:
         st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
@@ -55,7 +55,7 @@ def main():
     for exchange in st.session_state.conversation_history:
         st.text_area("Conversation:", value=exchange, height=100, disabled=True)
 
-    user_input = st.text_input("You:", help='Type your query and press enter.', key="user_input")
+    user_input = st.text_input("You:", help='Type your query and press enter.', key="user_input", value=st.session_state.get('user_input', ''))
 
     if st.button('Submit') and user_input:
         # Append user prompt to conversation history
@@ -70,7 +70,7 @@ def main():
         except RetryError as e:
             st.error("Failed to connect to the API after several attempts. Please try again later.")
 
-        # Clear input
+        # Clear input by updating the state used to manage the input value
         st.session_state['user_input'] = ""
         
         # Display updated conversation
