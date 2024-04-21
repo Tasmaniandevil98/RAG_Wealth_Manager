@@ -38,13 +38,12 @@ def make_api_request(agent, user_input):
     return agent.chat(user_input)
 
 
-# Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
-    docs = load_data(directory="docs/")  # Adjust directory as necessary
+    docs = load_data(directory="./data/")  # Adjust directory as necessary
 
     if 'agent' not in st.session_state:
         st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
@@ -53,35 +52,26 @@ def main():
         st.session_state.conversation_history = []
 
     # Display previous conversation
-    for index, exchange in enumerate(st.session_state.conversation_history):
-        st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
+    if st.session_state.conversation_history:
+        for index, exchange in enumerate(st.session_state.conversation_history):
+            st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
 
-    user_input = st.text_input("You:", help='Type your query and press enter.', key="user_input")
+    # Manage input reset through a temporary variable
+    user_input = st.text_input("You:", value="", key="user_input", on_change=lambda: st.session_state.pop('user_input', None))
 
-    if st.button('Submit'):
+    if st.button('Submit', key='submit_button'):
         if user_input:
             # Append user prompt to conversation history
             user_prompt_display = f"You: {user_input}"
             st.session_state.conversation_history.append(user_prompt_display)
 
-            try:
-                # Generate response using retry mechanism
-                response = make_api_request(st.session_state.agent, user_input)
-                bot_response_display = f"Bot: {response.response}"
-                st.session_state.conversation_history.append(bot_response_display)
-            except RetryError as e:
-                st.error("Failed to connect to the API after several attempts. Please try again later.")
+            # Generate response
+            response = st.session_state.agent.chat(user_input)
+            bot_response_display = f"Bot: {response.response}"
+            st.session_state.conversation_history.append(bot_response_display)
 
-            # Clear input by updating the state used to manage the input value
-            st.session_state['reset_input'] = True
-
-            # Display updated conversation
-            st.experimental_rerun()
-
-    # Check if we need to reset the input
-    if st.session_state.get('reset_input', False):
-        st.session_state['user_input'] = ""  # Clear input
-        del st.session_state['reset_input']  # Remove the flag to prevent further resets
+            # Clear input by triggering rerun which clears the text input due to the on_change callback
+            st.rerun()
 
 if __name__ == "__main__":
     main()
