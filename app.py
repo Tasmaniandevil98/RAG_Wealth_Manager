@@ -37,6 +37,7 @@ def make_api_request(agent, user_input):
     """Attempt to make an API request with retry mechanism."""
     return agent.chat(user_input)
 
+
 # Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
@@ -52,29 +53,30 @@ def main():
         st.session_state.conversation_history = []
 
     # Display previous conversation
-    for exchange in st.session_state.conversation_history:
-        st.text_area("Conversation:", value=exchange, height=100, disabled=True)
+    for index, exchange in enumerate(st.session_state.conversation_history):
+        st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
 
-    user_input = st.text_input("You:", help='Type your query and press enter.', key="user_input", value=st.session_state.get('user_input', ''))
+    user_input = st.text_input("You:", help='Type your query and press enter.', key="user_input", value="")
 
-    if st.button('Submit') and user_input:
-        # Append user prompt to conversation history
-        user_prompt_display = f"You: {user_input}"
-        st.session_state.conversation_history.append(user_prompt_display)
+    if st.button('Submit'):
+        if user_input:
+            # Append user prompt to conversation history
+            user_prompt_display = f"You: {user_input}"
+            st.session_state.conversation_history.append(user_prompt_display)
 
-        try:
-            # Generate response using retry mechanism
-            response = make_api_request(st.session_state.agent, user_input)
-            bot_response_display = f"Bot: {response.response}"
-            st.session_state.conversation_history.append(bot_response_display)
-        except RetryError as e:
-            st.error("Failed to connect to the API after several attempts. Please try again later.")
+            try:
+                # Generate response using retry mechanism
+                response = make_api_request(st.session_state.agent, user_input)
+                bot_response_display = f"Bot: {response.response}"
+                st.session_state.conversation_history.append(bot_response_display)
+            except RetryError as e:
+                st.error("Failed to connect to the API after several attempts. Please try again later.")
 
-        # Clear input by updating the state used to manage the input value
-        st.session_state['user_input'] = ""
-        
-        # Display updated conversation
-        st.experimental_rerun()
+            # Clear input by updating the state used to manage the input value
+            st.session_state['user_input'] = ""
+            
+            # Display updated conversation
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
