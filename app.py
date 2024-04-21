@@ -4,11 +4,10 @@ from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.chat_engine import CondensePlusContextChatEngine
 from llama_index.embeddings.openai import OpenAIEmbedding
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List
 import os
-import nltk
 
-
+# Parameters for RAG
 class RAGParams(BaseModel):
     include_summarization: bool = Field(default=False)
     top_k: int = Field(default=2)
@@ -28,27 +27,41 @@ def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Docume
     agent = CondensePlusContextChatEngine.from_defaults(vector_index.as_retriever(similarity_top_k=rag_params.top_k), system_prompt=system_prompt)
     return agent
 
-# Streamlit UI
+# Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
     openai_api_key = st.secrets["openai_api_key"]
     os.environ["OPENAI_API_KEY"] = openai_api_key
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
-    rag_params = RAGParams()
-    docs = load_data(directory='docs/')
-    agent = construct_agent(system_prompt, rag_params, docs)
 
+    # Initialize parameters and load data only once
+    if 'agent' not in st.session_state:
+        rag_params = RAGParams()
+        docs = load_data(directory="path/to/your/documents")
+        st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
+
+    # Chat interface
     user_input = st.text_input("You:", help='Type your query and press enter.')
-    if st.button('Submit'):
-        if user_input:
-            # Perform chat
-            response = agent.chat(user_input)
-            st.write(f"Bot: {response.response}")
-            # Optionally, display the top K results
-            top_k_results = response.source_nodes[:rag_params.top_k]
-            st.write("Top results for prompt:")
-            for i, result in enumerate(top_k_results, start=1):
-                st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
+    if st.button('Submit') and user_input:
+        # Append user input to chat history
+        if 'chat_history' not in st.session_state:
+            st.session_state.chat_history = []
+        
+        st.session_state.chat_history.append(f"You: {user_input}")
+
+        # Perform chat
+        response = st.session_state.agent.chat(user_input)
+        st.session_state.chat_history.append(f"Bot: {response.response}")
+
+        # Display chat history
+        for message in st.session_state.chat_history:
+            st.text(message)
+
+        # Optionally, display the top K results
+        top_k_results = response.source_nodes[:rag_params.top_k]
+        st.write("Top results for prompt:")
+        for i, result in enumerate(top_k_results, start=1):
+            st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
 
 if __name__ == "__main__":
     main()
