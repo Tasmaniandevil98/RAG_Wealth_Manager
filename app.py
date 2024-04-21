@@ -38,6 +38,7 @@ def make_api_request(agent, user_input):
     return agent.chat(user_input)
 
 
+# Streamlit UI setup
 def main():
     st.title('Wealth Management Chatbot')
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
@@ -52,11 +53,12 @@ def main():
         st.session_state.conversation_history = []
 
     # Display previous conversation
-    if st.session_state.conversation_history:
-        for index, exchange in enumerate(st.session_state.conversation_history):
-            st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
+    for index, exchange in enumerate(st.session_state.conversation_history):
+        st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
 
-    user_input = st.text_input("You:", value="", key="user_input", on_change=lambda: st.session_state.pop('user_input', None))
+    # Create an input placeholder
+    user_input_placeholder = st.empty()
+    user_input = user_input_placeholder.text_input("You:", key="user_input")
 
     if st.button('Submit', key='submit_button'):
         if user_input:
@@ -68,17 +70,17 @@ def main():
             bot_response_display = f"Bot: {response.response}"
             st.session_state.conversation_history.append(bot_response_display)
 
-            # Clear input
-            st.session_state['user_input'] = ""
-
             # Display top k results
             top_k_results = response.source_nodes[:rag_params.top_k]
             st.write(f"Top {rag_params.top_k} results for your prompt:")
             for i, result in enumerate(top_k_results, start=1):
                 st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
 
+            # Clear the input field by recreating it
+            user_input_placeholder.text_input("You:", value='', key="user_input")
+
             # Display updated conversation
-            st.experimental_rerun()
+            st.rerun()
 
 if __name__ == "__main__":
     main()
