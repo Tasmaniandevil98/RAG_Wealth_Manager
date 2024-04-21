@@ -37,7 +37,7 @@ def main():
     # Initialize parameters and load data only once
     if 'agent' not in st.session_state:
         rag_params = RAGParams()
-        docs = load_data(directory="path/to/your/documents")
+        docs = load_data(directory="/docs")
         st.session_state.agent = construct_agent(system_prompt, rag_params, docs)
 
     # Chat interface
