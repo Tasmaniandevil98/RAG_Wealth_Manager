@@ -53,31 +53,25 @@ def main():
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
 
-    # Display previous conversation
-    for index, exchange in enumerate(st.session_state.conversation_history):
-        st.text_area("Conversation:", value=exchange, height=100, disabled=True, key=f"conversation_{index}")
-
-    # Create a unique key for the input widget by using the length of the conversation history
-    user_input_key = f"user_input_{len(st.session_state.conversation_history)}"
-    user_input = st.text_input("You:", key=user_input_key)
+    user_input = st.text_input("You:", key="user_input")
 
     if st.button('Submit', key='submit_button'):
         if user_input:
-            user_prompt_display = f"You: {user_input}"
-            st.session_state.conversation_history.append(user_prompt_display)
-
-            # Generate response
+            user_prompt_display = f"You: {user_input}\n"
             response = make_api_request(st.session_state.agent, user_input)
-            bot_response_display = f"Bot: {response.response}"
-            st.session_state.conversation_history.append(bot_response_display)
-
-            # Display top k results
+            bot_response_display = f"Bot: {response.response}\n"
+            top_k_results_display = "Top results:\n"
             top_k_results = response.source_nodes[:rag_params.top_k]
-            st.write(f"Top {rag_params.top_k} results for your prompt:")
             for i, result in enumerate(top_k_results, start=1):
-                st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
+                top_k_results_display += f"{i}. {result.node.text[:1000]} (Score: {result.score})\n"
 
-            # No need to manually clear the input field, it's automatically cleared due to the unique key
+            # Append the full conversation block (user prompt, bot response, and top-k results)
+            full_conversation_block = user_prompt_display + bot_response_display + top_k_results_display
+            st.session_state.conversation_history.append(full_conversation_block)
+            st.text_area("Conversation:", value="\n".join(st.session_state.conversation_history), height=300, disabled=True)
+
+            # Clear the input field
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
