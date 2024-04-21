@@ -37,7 +37,6 @@ def make_api_request(agent, user_input):
 
 def main():
     st.title('Wealth Management Chatbot')
-    os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
 
@@ -58,7 +57,9 @@ def main():
             )
             st.text_area("Current Conversation:", value=conversation_text + top_k_results_text, height=300, disabled=True, key=st.session_state.get('conversation_count', 0))
             st.session_state['conversation_count'] = st.session_state.get('conversation_count', 0) + 1
-            st.session_state['user_input'] = ""  # Clear input
+            # Use rerun to clear the input field
+            st.rerun()
 
 if __name__ == "__main__":
     main()
+
