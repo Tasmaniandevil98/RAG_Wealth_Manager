@@ -59,24 +59,29 @@ def main():
     if 'input_count' not in st.session_state:
         st.session_state.input_count = 0
 
-    # Display all conversation history before input fields
-    for index, conversation in list(enumerate(st.session_state.conversation_history)):
-        st.text_area(f"Conversation {index + 1}:", value=conversation, height=300, disabled=True, key=f"conv_{index}")
+    # Display all previous conversations and contexts
+    for index, (conversation, context) in enumerate(zip(st.session_state.conversation_history, st.session_state.context_history)):
+        st.text_area(f"Conversation {index + 1}:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
+        st.text_area(f"Context {index + 1}:", value=context, height=150, disabled=True, key=f"context_{index}")
 
     # Generate a unique key for the input widget using the count of inputs
     user_input_key = f"user_input_{st.session_state.input_count}"
-    user_input = st.text_input("You:", key=user_input_key)
+    user_input = st.text_input("User Input:", key=user_input_key)
 
     if st.button('Submit', key='submit_button'):
         if user_input:
             response = make_api_request(st.session_state.agent, user_input)
-            conversation_text = f"You: {user_input}\nBot: {response.response}\n"
-            top_k_results_text = "\n".join(
+            bot_response = f"You: {user_input}\nBot: {response.response}\n"
+            # Append the bot response to the conversation history
+            st.session_state.conversation_history.append(bot_response)
+
+            # Display top k results separately and label them as "Context"
+            top_k_results = [
                 f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
                 for i, result in enumerate(response.source_nodes[:rag_params.top_k])
-            )
-            full_conversation_text = conversation_text + top_k_results_text
-            st.session_state.conversation_history.append(full_conversation_text)
+            ]
+            top_k_results_text = "\n".join(top_k_results)
+            st.session_state.context_history.append(top_k_results_text)
 
             # Increment the input count to generate a new key for the next input
             st.session_state.input_count += 1
