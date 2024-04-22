@@ -40,8 +40,22 @@ def make_api_request(agent, user_input):
     except Exception as e:
         logger.error(f"Failed to get response: {e}")
         raise
-
+        
+# Function to set the background
+def set_background(image_path):
+    css_style = f"""
+    <style>
+    .stApp {{
+        background-image: url({image_path});
+        background-size: cover;
+        background-position: center;
+    }}
+    </style>
+    """
+    st.markdown(css_style, unsafe_allow_html=True)
+    
 def main():
+    set_background("chatbot Background.jpg")
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     st.title('Wealth Management Chatbot')
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
