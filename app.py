@@ -59,6 +59,10 @@ def main():
     if 'input_count' not in st.session_state:
         st.session_state.input_count = 0
 
+    # Display all conversation history before input fields
+    for index, conversation in reversed(list(enumerate(st.session_state.conversation_history))):
+        st.text_area(f"Conversation {index + 1}:", value=conversation, height=300, disabled=True, key=f"conv_{index}")
+
     # Generate a unique key for the input widget using the count of inputs
     user_input_key = f"user_input_{st.session_state.input_count}"
     user_input = st.text_input("You:", key=user_input_key)
@@ -76,10 +80,8 @@ def main():
 
             # Increment the input count to generate a new key for the next input
             st.session_state.input_count += 1
-
-    # Display all conversation history
-    for index, conversation in enumerate(st.session_state.conversation_history):
-        st.text_area(f"Conversation {index + 1}:", value=conversation, height=300, disabled=True, key=f"conv_{index}")
+            # Clear the input field and rerun the app to refresh the UI
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
