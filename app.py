@@ -71,13 +71,13 @@ def main():
     if 'context_history' not in st.session_state:
         st.session_state.context_history = []
 
-    # Display previous conversations
-    for index, (conversation, context) in enumerate(zip(st.session_state.conversation_history, st.session_state.context_history)):
+    # Display previous conversations without numbering the context
+    for index, (conversation, context) in enumerate(zip(st.session_session.conversation_history, st.session_state.context_history)):
         col1, col2 = st.columns([2, 1])
         with col1:
-            st.text_area(f"Conversation {index + 1}:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
+            st.text_area("Conversation:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
         with col2:
-            st.text_area(f"Context {index + 1}:", value=context, height=150, disabled=True, key=f"context_{index}")
+            st.text_area("Context:", value=context, height=150, disabled=True, key=f"context_{index}")
 
     # Unique key for input widget using count of inputs
     user_input_key = f"user_input_{len(st.session_state.conversation_history)}"
