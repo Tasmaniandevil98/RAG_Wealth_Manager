@@ -72,7 +72,7 @@ def main():
         st.session_state.context_history = []
 
     # Display previous conversations without numbering the context
-    for index, (conversation, context) in enumerate(zip(st.session_session.conversation_history, st.session_state.context_history)):
+    for index, (conversation, context) in enumerate(zip(st.session_state.conversation_history, st.session_state.context_history)):
         col1, col2 = st.columns([2, 1])
         with col1:
             st.text_area("Conversation:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
