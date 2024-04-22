@@ -41,7 +41,6 @@ def make_api_request(agent, user_input):
         logger.error(f"Failed to get response: {e}")
         raise
 
-
 def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     st.title('Wealth Management Chatbot')
@@ -55,29 +54,27 @@ def main():
 
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
-
-    if 'input_count' not in st.session_state:
-        st.session_state.input_count = 0
-    if 'context_history' not in st.session_state:  # Initialize the context history
+    if 'context_history' not in st.session_state:
         st.session_state.context_history = []
 
-    # Display all previous conversations and contexts
+    # Display previous conversations
     for index, (conversation, context) in enumerate(zip(st.session_state.conversation_history, st.session_state.context_history)):
-        st.text_area(f"Conversation {index + 1}:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
-        st.text_area(f"Context {index + 1}:", value=context, height=150, disabled=True, key=f"context_{index}")
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.text_area(f"Conversation {index + 1}:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
+        with col2:
+            st.text_area(f"Context {index + 1}:", value=context, height=150, disabled=True, key=f"context_{index}")
 
-    # Generate a unique key for the input widget using the count of inputs
-    user_input_key = f"user_input_{st.session_state.input_count}"
+    # Unique key for input widget using count of inputs
+    user_input_key = f"user_input_{len(st.session_state.conversation_history)}"
     user_input = st.text_input("User Input:", key=user_input_key)
 
     if st.button('Submit', key='submit_button'):
         if user_input:
             response = make_api_request(st.session_state.agent, user_input)
             bot_response = f"You: {user_input}\nBot: {response.response}\n"
-            # Append the bot response to the conversation history
             st.session_state.conversation_history.append(bot_response)
 
-            # Display top k results separately and label them as "Context"
             top_k_results = [
                 f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
                 for i, result in enumerate(response.source_nodes[:rag_params.top_k])
@@ -85,9 +82,7 @@ def main():
             top_k_results_text = "\n".join(top_k_results)
             st.session_state.context_history.append(top_k_results_text)
 
-            # Increment the input count to generate a new key for the next input
-            st.session_state.input_count += 1
-            # Clear the input field and rerun the app to refresh the UI
+            # Refresh UI
             st.experimental_rerun()
 
 if __name__ == "__main__":
