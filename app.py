@@ -58,6 +58,8 @@ def main():
 
     if 'input_count' not in st.session_state:
         st.session_state.input_count = 0
+    if 'context_history' not in st.session_state:  # Initialize the context history
+        st.session_state.context_history = []
 
     # Display all previous conversations and contexts
     for index, (conversation, context) in enumerate(zip(st.session_state.conversation_history, st.session_state.context_history)):
