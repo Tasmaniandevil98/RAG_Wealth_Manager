@@ -57,7 +57,7 @@ def set_background(image_path):
 def main():
     set_background("chatbot Background.jpg")
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
-    st.title('Wealth Management Chatbot')
+    st.title('AI Wealth Management Advisor')
     system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
     rag_params = RAGParams()
 
