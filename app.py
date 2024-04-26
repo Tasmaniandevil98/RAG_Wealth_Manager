@@ -67,7 +67,7 @@ def main():
 
         # Update context in the expander
         top_k_results = [
-            f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
+            f"{i + 1}. {result.node.text[:1000]}"
             for i, result in enumerate(response.source_nodes[:2])
         ]
         st.session_state.current_context = "\n".join(top_k_results)
