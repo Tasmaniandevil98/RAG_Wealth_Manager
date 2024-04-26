@@ -58,7 +58,7 @@ def main():
             st.markdown(message["content"])
 
     # Handle user input
-    prompt = st.chat_input("Your query:")
+    prompt = st.chat_input("Hello! Please ask me any wealth management questions here...")
     if prompt:
         st.session_state.messages.append({"role": "user", "content": prompt})
         response = make_api_request(st.session_state.agent, prompt)
