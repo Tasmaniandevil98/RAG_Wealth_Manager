@@ -70,6 +70,7 @@ def main():
 
     # Display chat messages from history
     for message in st.session_state.messages:
+        avatar = "🧑" if message["role"] == "user" else "🤖"
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
