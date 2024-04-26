@@ -1,5 +1,4 @@
 import streamlit as st
-from openai import OpenAI
 from llama_index.llms import OpenAI as LlamaOpenAI
 from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.chat_engine import CondensePlusContextChatEngine
@@ -48,9 +47,11 @@ def main():
     if 'docs' not in st.session_state:
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
-        st.session_state.agent = construct_agent("You are a wealth management chatbot that can answer questions based on the provided documents.", RAGParams(), st.session_state.docs)
+        st.session_state.agent = construct_agent("You are a wealth management chatbot.", RAGParams(), st.session_state.docs)
     if 'messages' not in st.session_state:
         st.session_state.messages = []
+    if 'current_context' not in st.session_state:
+        st.session_state.current_context = ""
 
     # Display chat messages from history
     for message in st.session_state.messages:
@@ -64,11 +65,16 @@ def main():
         response = make_api_request(st.session_state.agent, prompt)
         st.session_state.messages.append({"role": "assistant", "content": response.response})
 
-        with st.expander("See response details"):
-            st.write(f"Top results:\n{response.source_nodes[:2]}")
-        # Delay rerun to after updates
-        st.button("Click to continue", on_click=lambda: st.rerun())
+        # Update context in the expander
+        top_k_results = [
+            f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
+            for i, result in enumerate(response.source_nodes[:2])
+        ]
+        st.session_state.current_context = "\n".join(top_k_results)
+
+    # Expander with context details
+    with st.expander("See response details", expanded=True):
+        st.write(st.session_state.current_context)
 
 if __name__ == "__main__":
     main()
-
