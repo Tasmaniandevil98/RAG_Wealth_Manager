@@ -54,7 +54,7 @@ def make_api_request(agent, user_input):
 
 def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
-    st.title('AI powered Wealth Manager')
+    st.title('AI - Powered Wealth Manager')
     if 'docs' not in st.session_state:
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
