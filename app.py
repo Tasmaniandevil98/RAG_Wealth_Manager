@@ -4,7 +4,6 @@ from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.chat_engine import CondensePlusContextChatEngine
 from llama_index.embeddings.openai import OpenAIEmbedding
 from pydantic import BaseModel, Field
-from typing import List
 import os
 from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryError
 import logging
@@ -33,52 +32,38 @@ def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Docume
 
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), after=after_log(logger, logging.INFO))
 def make_api_request(agent, user_input):
-    try:
-        response = agent.chat(user_input)
-        logger.info(f"Received response: {response.response}")
-        return response
-    except Exception as e:
-        logger.error(f"Failed to get response: {e}")
-        raise
+    return agent.chat(user_input)
 
 def main():
-    os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
     st.title('AI powered Wealth Manager')
-    rag_params = RAGParams()
+    os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
 
+    rag_params = RAGParams()
     if 'docs' not in st.session_state:
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
-        st.session_state.agent = construct_agent("YYou are a wealth management chatbot that can answer questions based on the provided documents.", rag_params, st.session_state.docs)
+        st.session_state.agent = construct_agent("You are a wealth management chatbot that can answer questions based on the provided documents.", rag_params, st.session_state.docs)
 
-    # Input field always at the bottom
-    with st.container():
-        user_input = st.text_input("You:", placeholder="Ask any wealth management related question here...", key="user_input")
-
-    # Chat history displayed above input
+    # Chat history container
     if 'messages' not in st.session_state:
         st.session_state.messages = []
 
-    for message in st.session_state.messages:
-        if message['role'] == 'user':
-            with st.chat_message("You"):
-                st.write(message['content'])
-        else:
-            with st.chat_message("Assistant"):
-                st.write(message['content'])
-
+    # Input box and button
+    user_input = st.text_input("You:", placeholder="Type your wealth management questions here...", key="user_input")
     if st.button('Submit'):
         if user_input:
+            # Process the input
             response = make_api_request(st.session_state.agent, user_input)
-            # Update messages with user input and response
-            st.session_state.messages.append({'role': 'user', 'content': user_input})
-            st.session_state.messages.append({'role': 'assistant', 'content': response.response})
+            st.session_state.messages.append(f"You: {user_input}\nBot: {response.response}")
 
-            # Context in an expander
-            with st.expander("Context"):
-                for i, result in enumerate(response.source_nodes[:rag_params.top_k], start=1):
-                    st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
-            st.experimental_rerun()
+            # Display top k results in an expander
+            top_k_results = "\n".join([f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
+                                       for i, result in enumerate(response.source_nodes[:rag_params.top_k])])
+            st.session_state.messages.append(f"Context:\n{top_k_results}")
+
+    # Display messages
+    for message in reversed(st.session_state.messages):
+        st.text_area("", value=message, height=200, disabled=True)
 
 if __name__ == "__main__":
     main()
