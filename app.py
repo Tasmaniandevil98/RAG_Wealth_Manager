@@ -25,12 +25,14 @@ st.markdown(
         width: 50px;
         height: 50px;
         border-radius: 50%;
+        background-size: cover;
+        background-position: center;
     }
     .user-avatar {
-        content: url('https://www.flaticon.com/free-icons/you-are-here'); /* Change URL to your user avatar image */
+        background-image: url('https://github.com/Tasmaniandevil98/RAG_Wealth_Manager/blob/main/you-are-here.png'); /* Direct link to an image file */
     }
     .bot-avatar {
-        content: url('https://www.flaticon.com/free-icons/fintech'); /* Change URL to your bot avatar image */
+        background-image: url('https://github.com/Tasmaniandevil98/RAG_Wealth_Manager/blob/main/asset.png'); /* Direct link to an image file */
     }
     </style>
     """,
@@ -39,10 +41,7 @@ st.markdown(
 
 # Example function to display chat messages
 def display_chat_message(role, text):
-    if role == "user":
-        avatar_class = "user-avatar"
-    else:
-        avatar_class = "bot-avatar"
+    avatar_class = "user-avatar" if role == "user" else "bot-avatar"
     
     st.markdown(
         f"""
@@ -53,7 +52,6 @@ def display_chat_message(role, text):
         """,
         unsafe_allow_html=True
     )
-
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
