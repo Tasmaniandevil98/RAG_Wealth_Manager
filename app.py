@@ -71,14 +71,13 @@ def main():
             for i, result in enumerate(response.source_nodes[:2])
         ]
         st.session_state.current_context = "\n".join(top_k_results)
+        # Use rerun here to update the interface after processing the input
+        st.experimental_rerun()
 
     # Expander with context details
-    with st.expander("See the details about the source of information", expanded=True):
+    with st.expander("See the details about the source of information", expanded=False):
         st.write(st.session_state.current_context)
-        st.rerun()
     
 
 if __name__ == "__main__":
     main()
-
-
