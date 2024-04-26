@@ -9,35 +9,6 @@ import os
 from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryError
 import logging
 
-# Custom CSS to include custom avatars and style the chat messages
-st.markdown(
-    """
-    <style>
-    .chat-message {
-        position: relative;
-        padding-left: 60px; /* Make space for avatar image */
-        min-height: 50px; /* Ensure the message box is large enough to display the avatar */
-    }
-    .chat-avatar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-size: cover;
-        background-position: center;
-    }
-    .user-avatar {
-        background-image: url('https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/85277fcf16ba85e667326d8a9d23b6e3688e0743/you-are-here.png'); /* Direct link to an image file */
-    }
-    .bot-avatar {
-        background-image: url('https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/85277fcf16ba85e667326d8a9d23b6e3688e0743/asset.png'); /* Direct link to an image file */
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # Example function to display chat messages
 def display_chat_message(role, text):
