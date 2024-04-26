@@ -66,7 +66,8 @@ def main():
 
         with st.expander("See response details"):
             st.write(f"Top results:\n{response.source_nodes[:2]}")
-        st.rerun()
+        # Delay rerun to after updates
+        st.button("Click to continue", on_click=lambda: st.rerun())
 
 if __name__ == "__main__":
     main()
