@@ -63,10 +63,10 @@ def main():
         st.session_state.messages.append({"role": "user", "content": prompt})
         response = make_api_request(st.session_state.agent, prompt)
         st.session_state.messages.append({"role": "assistant", "content": response.response})
-        st.rerun()
 
         with st.expander("See response details"):
             st.write(f"Top results:\n{response.source_nodes[:2]}")
+        st.rerun()
 
 if __name__ == "__main__":
     main()
