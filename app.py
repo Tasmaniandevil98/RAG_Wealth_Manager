@@ -70,8 +70,8 @@ def main():
 
     # Display chat messages from history
     for message in st.session_state.messages:
-        avatar = "🧑" if message["role"] == "user" else "🤖"
-        with st.chat_message(message["role"]):
+        avatar = 'https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/main/you-are-here.png' if message["role"] == "user" else "https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/main/asset.png"
+        with st.chat_message(message["role"],avatar=avatar):
             st.markdown(message["content"])
 
     # Handle user input
