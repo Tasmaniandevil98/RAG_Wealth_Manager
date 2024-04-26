@@ -43,28 +43,42 @@ def make_api_request(agent, user_input):
 
 def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
-    st.title('Wealth Management Chatbot')
+    st.title('AI powered Wealth Manager')
+    rag_params = RAGParams()
 
     if 'docs' not in st.session_state:
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
-        st.session_state.agent = construct_agent("You are a wealth management chatbot.", RAGParams(), st.session_state.docs)
+        st.session_state.agent = construct_agent("YYou are a wealth management chatbot that can answer questions based on the provided documents.", rag_params, st.session_state.docs)
 
-    if 'conversation_history' not in st.session_state:
-        st.session_state.conversation_history = []
+    # Input field always at the bottom
+    with st.container():
+        user_input = st.text_input("You:", placeholder="Ask any wealth management related question here...", key="user_input")
 
-    st.text_input("User Input:", key="user_input")
+    # Chat history displayed above input
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
+
+    for message in st.session_state.messages:
+        if message['role'] == 'user':
+            with st.chat_message("You"):
+                st.write(message['content'])
+        else:
+            with st.chat_message("Assistant"):
+                st.write(message['content'])
 
     if st.button('Submit'):
-        user_input = st.session_state.user_input
         if user_input:
             response = make_api_request(st.session_state.agent, user_input)
-            bot_response = f"You: {user_input}\nBot: {response.response}"
-            st.session_state.conversation_history.append(bot_response)
+            # Update messages with user input and response
+            st.session_state.messages.append({'role': 'user', 'content': user_input})
+            st.session_state.messages.append({'role': 'assistant', 'content': response.response})
 
-            # Display conversation
-            for conversation in st.session_state.conversation_history:
-                st.text_area("Chat:", value=conversation, height=300, disabled=True)
+            # Context in an expander
+            with st.expander("Context"):
+                for i, result in enumerate(response.source_nodes[:rag_params.top_k], start=1):
+                    st.write(f"{i}. {result.node.text[:1000]} (Score: {result.score})")
+            st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
