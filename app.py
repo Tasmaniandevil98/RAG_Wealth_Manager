@@ -75,7 +75,7 @@ def main():
     # Expander with context details
     with st.expander("See the details about the source of information", expanded=True):
         st.write(st.session_state.current_context)
-    st.rerun()
+        st.rerun()
     
 
 if __name__ == "__main__":
