@@ -75,6 +75,7 @@ def main():
     # Expander with context details
     with st.expander("See response details", expanded=True):
         st.write(st.session_state.current_context)
+    st.rerun()
 
 if __name__ == "__main__":
     main()
