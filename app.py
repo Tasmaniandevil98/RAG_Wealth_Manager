@@ -9,6 +9,52 @@ import os
 from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryError
 import logging
 
+# Custom CSS to include custom avatars and style the chat messages
+st.markdown(
+    """
+    <style>
+    .chat-message {
+        position: relative;
+        padding-left: 60px; /* Make space for avatar image */
+        min-height: 50px; /* Ensure the message box is large enough to display the avatar */
+    }
+    .chat-avatar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+    }
+    .user-avatar {
+        content: url('https://www.flaticon.com/free-icons/you-are-here'); /* Change URL to your user avatar image */
+    }
+    .bot-avatar {
+        content: url('https://www.flaticon.com/free-icons/fintech'); /* Change URL to your bot avatar image */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Example function to display chat messages
+def display_chat_message(role, text):
+    if role == "user":
+        avatar_class = "user-avatar"
+    else:
+        avatar_class = "bot-avatar"
+    
+    st.markdown(
+        f"""
+        <div class="chat-message">
+            <div class="{avatar_class} chat-avatar"></div>
+            <p>{text}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
