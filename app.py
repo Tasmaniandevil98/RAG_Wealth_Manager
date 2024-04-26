@@ -29,10 +29,10 @@ st.markdown(
         background-position: center;
     }
     .user-avatar {
-        background-image: url('https://github.com/Tasmaniandevil98/RAG_Wealth_Manager/blob/main/you-are-here.png'); /* Direct link to an image file */
+        background-image: url('https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/85277fcf16ba85e667326d8a9d23b6e3688e0743/you-are-here.png'); /* Direct link to an image file */
     }
     .bot-avatar {
-        background-image: url('https://github.com/Tasmaniandevil98/RAG_Wealth_Manager/blob/main/asset.png'); /* Direct link to an image file */
+        background-image: url('https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/85277fcf16ba85e667326d8a9d23b6e3688e0743/asset.png'); /* Direct link to an image file */
     }
     </style>
     """,
@@ -50,8 +50,8 @@ def display_chat_message(role, text):
             <p>{text}</p>
         </div>
         """,
-        unsafe_allow_html=True
-    )
+        unsafe_allow_html=True 
+        )
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -116,7 +116,7 @@ def main():
         ]
         st.session_state.current_context = "\n".join(top_k_results)
         # Use rerun here to update the interface after processing the input
-        st.experimental_rerun()
+        st.rerun()
 
     # Expander with context details
     with st.expander("See the details about the source of information", expanded=False):
