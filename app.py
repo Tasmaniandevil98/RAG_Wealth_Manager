@@ -40,64 +40,31 @@ def make_api_request(agent, user_input):
     except Exception as e:
         logger.error(f"Failed to get response: {e}")
         raise
-        
-# Function to set the background
-def set_background(image_path):
-    css_style = f"""
-    <style>
-    .stApp {{
-        background-image: url({image_path});
-        background-size: cover;
-        background-position: center;
-    }}
-    </style>
-    """
-    st.markdown(css_style, unsafe_allow_html=True)
-    
+
 def main():
-    set_background("chatbot Background.jpg")
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
-    st.title('AI Wealth Management Advisor')
-    system_prompt = "You are a wealth management chatbot that can answer questions based on the provided documents."
-    rag_params = RAGParams()
+    st.title('Wealth Management Chatbot')
 
     if 'docs' not in st.session_state:
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
-        st.session_state.agent = construct_agent(system_prompt, rag_params, st.session_state.docs)
+        st.session_state.agent = construct_agent("You are a wealth management chatbot.", RAGParams(), st.session_state.docs)
 
     if 'conversation_history' not in st.session_state:
         st.session_state.conversation_history = []
-    if 'context_history' not in st.session_state:
-        st.session_state.context_history = []
 
-    # Display previous conversations without numbering the context
-    for index, (conversation, context) in enumerate(zip(st.session_state.conversation_history, st.session_state.context_history)):
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            st.text_area("Conversation:", value=conversation, height=150, disabled=True, key=f"conv_{index}")
-        with col2:
-            st.text_area("Context:", value=context, height=150, disabled=True, key=f"context_{index}")
+    st.text_input("User Input:", key="user_input")
 
-    # Unique key for input widget using count of inputs
-    user_input_key = f"user_input_{len(st.session_state.conversation_history)}"
-    user_input = st.text_input("User Input:", key=user_input_key)
-
-    if st.button('Submit', key='submit_button'):
+    if st.button('Submit'):
+        user_input = st.session_state.user_input
         if user_input:
             response = make_api_request(st.session_state.agent, user_input)
-            bot_response = f"You: {user_input}\nBot: {response.response}\n"
+            bot_response = f"You: {user_input}\nBot: {response.response}"
             st.session_state.conversation_history.append(bot_response)
 
-            top_k_results = [
-                f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
-                for i, result in enumerate(response.source_nodes[:rag_params.top_k])
-            ]
-            top_k_results_text = "\n".join(top_k_results)
-            st.session_state.context_history.append(top_k_results_text)
-
-            # Refresh UI
-            st.experimental_rerun()
+            # Display conversation
+            for conversation in st.session_state.conversation_history:
+                st.text_area("Chat:", value=conversation, height=300, disabled=True)
 
 if __name__ == "__main__":
     main()
