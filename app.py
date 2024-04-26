@@ -50,14 +50,13 @@ def main():
         st.session_state.agent = construct_agent("You are a wealth management chatbot.", RAGParams(), st.session_state.docs)
     if 'messages' not in st.session_state:
         st.session_state.messages = []
+    if 'current_context' not in st.session_state:
+        st.session_state.current_context = ""
 
-    # Display previous conversations
+    # Display chat messages from history
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
-    # Expander for context details, always visible
-    context_expander = st.expander("See response details", expanded=True)
 
     # Handle user input
     prompt = st.chat_input("Hello! Please ask me any wealth management questions here...")
@@ -66,14 +65,20 @@ def main():
         response = make_api_request(st.session_state.agent, prompt)
         st.session_state.messages.append({"role": "assistant", "content": response.response})
 
-        # Update the expander with new context details
+        # Update context in the expander
         top_k_results = [
             f"{i + 1}. {result.node.text[:1000]} (Score: {result.score})"
             for i, result in enumerate(response.source_nodes[:2])
         ]
-        context_details = "\n".join(top_k_results)
-        with context_expander:
-            st.write(context_details)
+        st.session_state.current_context = "\n".join(top_k_results)
+
+    # Expander with context details
+    with st.expander("See the details about the source of information", expanded=True):
+        st.write(st.session_state.current_context)
+        st.rerun()
+    
 
 if __name__ == "__main__":
     main()
+
+
