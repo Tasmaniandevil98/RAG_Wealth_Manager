@@ -9,20 +9,16 @@ import os
 from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryError
 import logging
 
+# Define the URL of your image
+image_url = "https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/main/Logo-us-bank-clipart-PNG.png"
 
-# Example function to display chat messages
-def display_chat_message(role, text):
-    avatar_class = "user-avatar" if role == "user" else "bot-avatar"
-    
-    st.markdown(
-        f"""
-        <div class="chat-message">
-            <div class="{avatar_class} chat-avatar"></div>
-            <p>{text}</p>
-        </div>
-        """,
-        unsafe_allow_html=True 
-        )
+# Custom HTML and CSS for the title
+st.markdown(f"""
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="{image_url}" alt="Logo" style="width: 50px; height: 50px; border-radius: 50%;">
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
