@@ -5,6 +5,7 @@ from llama_index import VectorStoreIndex, ServiceContext, Document
 from llama_index.chat_engine import CondensePlusContextChatEngine
 from llama_index.embeddings.openai import OpenAIEmbedding
 from pydantic import BaseModel, Field
+from typing import List
 import os
 from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryError
 import logging
