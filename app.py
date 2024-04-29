@@ -15,7 +15,7 @@ image_url = "https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manag
 # Custom HTML and CSS for the title
 st.markdown(f"""
     <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="{image_url}" alt="Logo" style="width: 7500px; height: 125px;">
+        <img src="{image_url}" alt="Logo" style="width: 750px; height: 125px;">
     </div>
     """, unsafe_allow_html=True)
 
