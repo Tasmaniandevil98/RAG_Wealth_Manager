@@ -10,7 +10,7 @@ from tenacity import retry, wait_fixed, stop_after_attempt, after_log, RetryErro
 import logging
 
 # Define the URL of your image
-image_url = "https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/main/Logo-us-bank-clipart-PNG.png"
+#image_url = "https://raw.githubusercontent.com/Tasmaniandevil98/RAG_Wealth_Manager/main/Logo-us-bank-clipart-PNG.png"
 
 # Custom HTML and CSS for the title
 st.markdown(f"""
