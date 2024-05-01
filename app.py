@@ -24,6 +24,7 @@ st.markdown(f"""
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Define RAGParams class to store and structure model parameters
 class RAGParams(BaseModel):
     include_summarization: bool = Field(default=False)
     top_k: int = Field(default=2)
@@ -31,17 +32,20 @@ class RAGParams(BaseModel):
     embed_model: str = Field(OpenAIEmbedding())
     llm: str = Field(default="gpt-4-1106-preview")
 
+# Function to load data from a directory into a list of documents
 def load_data(directory: str) -> List[Document]:
     from llama_index import SimpleDirectoryReader
     reader = SimpleDirectoryReader(input_dir=directory)
     return reader.load_data()
 
+# Function to construct a chatbot agent using selected model and documents
 def construct_agent(system_prompt: str, rag_params: RAGParams, docs: List[Document]) -> CondensePlusContextChatEngine:
     llm = LlamaOpenAI(model=rag_params.llm)
     service_context = ServiceContext.from_defaults(chunk_size=rag_params.chunk_size, llm=llm, embed_model=rag_params.embed_model)
     vector_index = VectorStoreIndex.from_documents(docs, service_context=service_context)
     return CondensePlusContextChatEngine.from_defaults(vector_index.as_retriever(similarity_top_k=rag_params.top_k), system_prompt=system_prompt)
 
+# Function to make an API request with retry logic
 @retry(wait=wait_fixed(2), stop=stop_after_attempt(5), after=after_log(logger, logging.INFO))
 def make_api_request(agent, user_input):
     try:
@@ -52,9 +56,14 @@ def make_api_request(agent, user_input):
         logger.error(f"Failed to get response: {e}")
         raise
 
+# Main function to drive the program
 def main():
     os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
+
+    # Display the application title
     st.title('AI - Powered Wealth Manager')
+
+    # Load necessary data and setup the agent
     if 'docs' not in st.session_state:
         st.session_state.docs = load_data(directory="docs/")
     if 'agent' not in st.session_state:
@@ -73,7 +82,10 @@ def main():
     # Handle user input
     prompt = st.chat_input("Hello! Please ask me any wealth management questions here...")
     if prompt:
+        # Add user message to the session state
         st.session_state.messages.append({"role": "user", "content": prompt})
+
+        # Make an API request and add the response to the session state
         response = make_api_request(st.session_state.agent, prompt)
         st.session_state.messages.append({"role": "assistant", "content": response.response})
 
@@ -83,6 +95,7 @@ def main():
             for i, result in enumerate(response.source_nodes[:2])
         ]
         st.session_state.current_context = "\n".join(top_k_results)
+        
         # Use rerun here to update the interface after processing the input
         st.rerun()
 
@@ -90,6 +103,6 @@ def main():
     with st.expander("See the details about the source of information", expanded=False):
         st.write(st.session_state.current_context)
     
-
+# Check if the module is the main entry point and run the main function
 if __name__ == "__main__":
     main()
